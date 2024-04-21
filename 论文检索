@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// 定义文献结构体
+struct Literature {
+    char title[100];
+    char author[50];
+    char content[500];
+};
+
+// 生成包含文献信息的文件
+void generateFiles() {
+    for (int i = 1; i <= 50; i++) {
+        char filename[20];
+        sprintf(filename, "literature_%02d.txt", i);
+
+        FILE* file = fopen(filename, "w");
+        if (file == NULL) {
+            perror("Error creating file");
+            exit(EXIT_FAILURE);
+        }
+
+        struct Literature lit;
+        sprintf(lit.title, "Title%d", i);
+        sprintf(lit.author, "Author%d", i);
+        sprintf(lit.content, "Content%d", i);
+
+        fprintf(file, "Title: %s\nAuthor: %s\nContent: %s\n", lit.title, lit.author, lit.content);
+
+        fclose(file);
+    }
+}
+
+// 根据关键字检索文献
+void searchLiterature(char* keyword, int searchOption) {
+    int matchFound = 0; // 添加标记，表示是否有匹配项
+
+    for (int i = 1; i <= 50; i++) {
+        char filename[20];
+        sprintf(filename, "literature_%02d.txt", i);
+
+        FILE* file = fopen(filename, "r");
+        if (file == NULL) {
+            perror("Error opening file");
+            exit(EXIT_FAILURE);
+        }
+
+        struct Literature lit;
+        fgets(lit.title, sizeof(lit.title), file);
+        fgets(lit.author, sizeof(lit.author), file);
+        fgets(lit.content, sizeof(lit.content), file);
+
+        // 根据用户选择的搜索选项进行比较
+        char* searchString;
+        switch (searchOption) {
+        case 1:
+            searchString = lit.title;
+            break;
+        case 2:
+            searchString = lit.author;
+            break;
+        case 3:
+            searchString = lit.content;
+            break;
+        default:
+            searchString = lit.title;  // 默认按标题搜索
+        }
+
+        // 使用strstr函数检查关键字是否在文献信息中
+        if (strstr(searchString, keyword) != NULL) {
+            matchFound = 1; // 设置标记为已找到匹配项
+            printf("Match found in %s:\n%s%s%s\n", filename, lit.title, lit.author, lit.content);
+        }
+
+        fclose(file);
+    }
+
+    // 如果没有找到匹配项，输出相应的提示
+    if (!matchFound) {
+        printf("No matching literature found.\n");
+    }
+}
+
+int main() {
+    int choice;
+
+    // 生成包含文献信息的文件
+    generateFiles();
+
+    do {
+        system("cls");
+        // 用户选择操作
+        printf("\nChoose an option:\n");
+        printf("1. Search literature\n");
+        printf("2. Exit\n");
+        scanf("%d", &choice);
+
+        switch (choice) {
+        case 1: {
+            // 用户输入检索关键字和选项
+            char keyword[100];
+            int searchOption;
+
+            printf("Enter search keyword: ");
+            scanf("%s", keyword);
+
+            printf("Choose search option:\n");
+            printf("1. Title\n2. Author\n3. Content\n");
+            scanf("%d", &searchOption);
+
+            // 执行检索
+            searchLiterature(keyword, searchOption);
+            getchar();
+            getchar();
+            break;
+        }
+        case 2:
+            // 退出程序
+            printf("Exiting program.\n");
+            break;
+        default:
+            printf("Invalid choice. Please enter a valid option.\n");
+        }
+    } while (choice != 2);
+
+    return 0;
+}
